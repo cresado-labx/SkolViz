@@ -1,6 +1,7 @@
 # SkolViz
 Rīgas 2026 skolu uzņemšanas plūsmas demo
 # Teorētisks Rīgas 10. klašu uzņemšanas vietu sadales modelis
+https://cresado-labx.github.io/SkolViz/skoluviz.html
 
 ## TLDR
 
