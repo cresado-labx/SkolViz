@@ -244,6 +244,174 @@
         font-size: 18px;
         color: white;
       }
+
+      .mobile-toggle {
+        display: none;
+      }
+
+      @media (max-width: 900px) {
+        html,
+        body {
+          height: 100%;
+          overflow: hidden;
+        }
+
+        header {
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          min-height: 88px;
+        }
+
+        header h1 {
+          font-size: 16px;
+          line-height: 1.25;
+        }
+
+        .warning {
+          font-size: 12px;
+          line-height: 1.3;
+        }
+
+        main {
+          display: block;
+          height: calc(100dvh - 88px);
+          min-height: 0;
+          position: relative;
+          overflow: hidden;
+        }
+
+        main > section {
+          position: absolute;
+          inset: 0;
+          padding: 0;
+          border-right: 0;
+          overflow: hidden;
+        }
+
+        #canvasWrap {
+          width: 100%;
+          height: 100%;
+          min-height: 0;
+          overflow: auto;
+          padding: 72px 12px 42vh 12px;
+          scroll-padding-top: 72px;
+          scroll-padding-bottom: 42vh;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        canvas {
+          width: 900px;
+          height: 720px;
+          min-width: 900px;
+          min-height: 720px;
+          max-width: none;
+          max-height: none;
+        }
+
+        main > aside:not(.right) {
+          position: fixed;
+          top: 96px;
+          left: 8px;
+          right: 8px;
+          max-height: 45vh;
+          padding: 10px;
+          overflow-y: auto;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          background: rgba(2, 6, 23, 0.96);
+          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+          z-index: 35;
+          transform: translateY(calc(-100% - 120px));
+          transition: transform 0.18s ease;
+        }
+
+        body.controls-open main > aside:not(.right) {
+          transform: translateY(0);
+        }
+
+        main > aside:not(.right) .card:last-child {
+          margin-bottom: 0;
+        }
+
+        .right {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 38vh;
+          padding: 10px 12px 14px;
+          overflow-y: auto;
+          border-left: 0;
+          border-right: 0;
+          border-top: 1px solid var(--border);
+          border-radius: 16px 16px 0 0;
+          background: rgba(2, 6, 23, 0.97);
+          box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.45);
+          z-index: 34;
+          transform: translateY(calc(100% - 34px));
+          transition: transform 0.18s ease;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        body.info-open .right {
+          transform: translateY(0);
+        }
+
+        .right::before {
+          content: "Info";
+          display: block;
+          width: 92px;
+          margin: 0 auto 10px;
+          padding: 6px 0;
+          border-radius: 999px;
+          background: var(--panel2);
+          color: var(--muted);
+          text-align: center;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }
+
+        .mobile-toggle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          position: fixed;
+          z-index: 50;
+          top: 96px;
+          width: auto;
+          margin: 0;
+          padding: 9px 12px;
+          border-radius: 999px;
+          background: rgba(17, 24, 39, 0.96);
+          border: 1px solid var(--border);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        #btnMobileControls {
+          left: 10px;
+        }
+
+        #btnMobileInfo {
+          right: 10px;
+        }
+
+        body.controls-open #btnMobileControls,
+        body.info-open #btnMobileInfo {
+          border-color: var(--accent);
+          color: white;
+        }
+
+        .program-list {
+          max-height: 28vh;
+        }
+
+        #eventLog {
+          height: 180px;
+        }
+      }
+
     </style>
   </head>
 
@@ -255,6 +423,8 @@
         skolu uzņemšanas aprēķins.
       </div>
     </header>
+    <button id="btnMobileControls" class="mobile-toggle" type="button">Sākt šeit</button>
+    <button id="btnMobileInfo" class="mobile-toggle" type="button">Info</button>
 
     <main>
       <aside>
@@ -355,16 +525,15 @@
         <div class="card">
           <h2>Kas pašlaik notiek?</h2>
           <div id="explanation" class="explain">
-            Nospied “Sākt”, lai ģenerētu fiktīvus skolēnus, skolas, programmas
-            un pieteikumus.
+            Nospied "Sākt". Tālāk vari vērot uzņemšanu soli pa solim vai automātiski. Pēc tam uzklikšķini uz skolēna, lai redzētu viņa ceļu.
           </div>
         </div>
 
         <div class="card">
           <h2>Atlasītais skolēns</h2>
           <div id="selectedStudentPanel" class="explain">
-            Uzklikšķini uz skolēna punkta baseinā, lai redzētu viņa prioritāšu
-            sarakstu.
+            Uzklikšķini uz skolēna punkta skolēnu kopā, lai redzētu viņa prioritāšu
+            sarakstu un to izmaiņas.
           </div>
         </div>
 
@@ -1064,16 +1233,19 @@
         let hoverTooltip = null;
 
         function resize() {
-          const rect = canvas.parentElement.getBoundingClientRect();
-          canvas.width = Math.max(
-            900,
-            Math.floor(rect.width * devicePixelRatio),
-          );
-          canvas.height = Math.max(
-            720,
-            Math.floor(rect.height * devicePixelRatio),
-          );
-          ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+          const ratio = window.devicePixelRatio || 1;
+          const cssWidth = Math.max(900, Math.floor(canvas.clientWidth || 0));
+          const cssHeight = Math.max(720, Math.floor(canvas.clientHeight || 0));
+
+          const nextWidth = Math.floor(cssWidth * ratio);
+          const nextHeight = Math.floor(cssHeight * ratio);
+
+          if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
+            canvas.width = nextWidth;
+            canvas.height = nextHeight;
+          }
+
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         }
 
         function drawHoverTooltip() {
@@ -1259,7 +1431,7 @@
             ctx.fillStyle = "#94a3b8";
             ctx.font = "16px system-ui";
             ctx.fillText(
-              'Nospied "Sākt", lai ģenerētu fiktīvu simulāciju.',
+              'Nospied "Sākt". Tālāk vari vērot uzņemšanu soli pa solim vai automātiski. Uzklikšķini uz skolēna, lai redzētu viņa ceļu.',
               40,
               50,
             );
@@ -1510,7 +1682,7 @@
 
           this.renderLegend();
           this.updateExplanation(
-            "Nospied “Sākt”, lai ģenerētu fiktīvu demo simulāciju.",
+            "Nospied \"Sākt\". Tālāk vari vērot uzņemšanu soli pa solim vai automātiski. Uzklikšķini uz skolēna, lai redzētu viņa ceļu.",
           );
           this.updateStats();
           this.updateSelectedStudentPanel();
@@ -1535,6 +1707,8 @@
             btn72h: document.getElementById("btn72h"),
             btnAuto: document.getElementById("btnAuto"),
             btnReset: document.getElementById("btnReset"),
+            btnMobileControls: document.getElementById("btnMobileControls"),
+            btnMobileInfo: document.getElementById("btnMobileInfo"),
             legendCard: document.querySelector(".card:nth-of-type(3)"),
             studentCountInput: document.getElementById("studentCountInput"),
             minAppsInput: document.getElementById("minAppsInput"),
@@ -1551,6 +1725,14 @@
             this.autoUntilStable(),
           );
           this.dom.btnReset.addEventListener("click", () => this.reset());
+
+          this.dom.btnMobileControls?.addEventListener("click", () => {
+            document.body.classList.toggle("controls-open");
+          });
+
+          this.dom.btnMobileInfo?.addEventListener("click", () => {
+            document.body.classList.toggle("info-open");
+          });
 
           this.dom.speedRange.addEventListener("input", (event) => {
             const speed = Number(event.target.value);
@@ -1690,6 +1872,16 @@
 
           this.dom.btnRank.disabled = !canRank;
           this.dom.btnInvite.disabled = !canInvite;
+
+          if (this.dom.btnMobileControls) {
+            this.dom.btnMobileControls.textContent = hasSimulation
+              ? "Vadība"
+              : "Sākt šeit";
+            this.dom.btnMobileControls.setAttribute(
+              "aria-label",
+              hasSimulation ? "Atvērt vadības paneli" : "Atvērt sākuma vadību",
+            );
+          }
         },
 
         renderProgramSelector() {
@@ -1802,7 +1994,7 @@
 
           if (!this.simulacija || !this.selectedStudentIds?.length) {
             this.dom.selectedStudentPanel.innerHTML =
-              "Uzklikšķini uz skolēna punkta baseinā, lai redzētu viņa prioritāšu sarakstu.";
+              "Uzklikšķini uz punkta skolēnu kopā, lai redzētu viena skolēna prioritāros pieteikumus un to ceļu.";
             return;
           }
 
