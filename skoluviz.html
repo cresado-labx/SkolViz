@@ -1,0 +1,1769 @@
+<!doctype html>
+<html lang="lv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Teorētisks 10. klašu uzņemšanas demo</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --border: #374151;
+
+--gaida: #8b95a7;
+--virs: #f59e0b;
+--uzaicinats: #06b6d4;
+--apstiprinats: #4ade80;
+--noraidits: #f97316;
+--atsaukts: #d946ef;
+--atcelts: #475569;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #020617;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .warning {
+      color: #fde68a;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 320px 1fr 340px;
+      min-height: calc(100vh - 76px);
+    }
+
+    aside, section {
+      padding: 14px;
+      border-right: 1px solid var(--border);
+      overflow: auto;
+    }
+
+    .right {
+      border-right: 0;
+      border-left: 1px solid var(--border);
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    input[type="number"] {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #020617;
+  color: var(--text);
+}
+
+button {
+  width: 100%;
+  margin: 4px 0;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--panel2);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 650;
+  transition: background .15s, border-color .15s, color .15s, opacity .15s;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  background: #111827;
+  border-color: #1f2937;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.55;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+button.primary:disabled {
+  background: #172033;
+  border-color: #243247;
+  color: #64748b;
+}
+
+button.danger:disabled {
+  background: #2a1515;
+  border-color: #3b2020;
+  color: #7f8a99;
+}
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 8px 0 4px;
+    }
+
+    input[type="range"] { width: 100%; }
+
+    .program-list {
+      max-height: 260px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      background: #020617;
+    }
+
+    .check-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    .check-row input { margin: 0; }
+
+    #canvasWrap {
+      width: 100%;
+      height: 100%;
+      min-height: 720px;
+      background:
+        radial-gradient(circle at center, rgba(56,189,248,.08), transparent 45%),
+        #020617;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      min-height: 720px;
+      display: block;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    #eventLog {
+      height: 260px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .explain {
+      line-height: 1.45;
+      color: #d1d5db;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .stat {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .stat b {
+      display: block;
+      font-size: 18px;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Teorētisks Rīgas 10. klašu uzņemšanas vietu sadales demo</h1>
+  <div class="warning">
+    Šis ir ilustratīvs modelis ar fiktīviem datiem. Tas nav oficiāls Rīgas skolu uzņemšanas aprēķins.
+  </div>
+</header>
+
+<main>
+  <aside>
+    <div class="card">
+      <h2>Vadība</h2>
+      <button id="btnStart" class="primary">Sākt</button>
+      <button id="btnRank">Sarindot</button>
+      <button id="btnInvite">Izsūtīt uzaicinājumus</button>
+      <button id="btn72h">Nākamās 72h</button>
+      <button id="btnAuto">Automātiski līdz stabilam</button>
+      <button id="btnReset" class="danger">Atiestatīt</button>
+
+      <label for="speedRange">Animācijas ātrums</label>
+      <input id="speedRange" type="range" min="0.25" max="3" step="0.25" value="1">
+      <div id="speedLabel">1×</div>
+      <label for="studentCountInput">Skolēnu skaits</label>
+<input id="studentCountInput" type="number" min="80" max="400" step="10" value="180">
+
+<label for="minAppsInput">Pieteikumi uz skolēnu — min</label>
+<input id="minAppsInput" type="number" min="1" max="10" step="1" value="3">
+
+<label for="maxAppsInput">Pieteikumi uz skolēnu — max</label>
+<input id="maxAppsInput" type="number" min="1" max="10" step="1" value="6">
+    </div>
+
+    <div class="card">
+      <h2>Skolas / programmas</h2>
+      <div class="program-list" id="programSelector"></div>
+    </div>
+
+    <div class="card">
+      <h2>Leģenda</h2>
+      <div class="legend-row"><span class="dot" style="background:var(--gaida)"></span> gaidītāji</div>
+      <div class="legend-row"><span class="dot" style="background:var(--virs)"></span> virs robežas, bet neuzaicināts</div>
+      <div class="legend-row"><span class="dot" style="background:var(--uzaicinats)"></span> uzaicinātie</div>
+      <div class="legend-row"><span class="dot" style="background:var(--apstiprinats)"></span> apstiprināts</div>
+      <div class="legend-row"><span class="dot" style="background:var(--noraidits)"></span> atsaukts pēc uzaicināšanas</div>
+<div class="legend-row"><span class="dot" style="background:var(--atsaukts)"></span> atsaukts pirms uzaicināšanas</div>
+      <div class="legend-row"><span class="dot" style="background:var(--atcelts)"></span> atcelts zemākas prioritātes dēļ</div>
+    </div>
+  </aside>
+
+  <section>
+    <div id="canvasWrap">
+      <canvas id="vizCanvas"></canvas>
+    </div>
+  </section>
+
+  <aside class="right">
+    <div class="card">
+      <h2>Kas pašlaik notiek?</h2>
+      <div id="explanation" class="explain">
+        Nospied “Sākt”, lai ģenerētu fiktīvus skolēnus, skolas, programmas un pieteikumus.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Atlasītais skolēns</h2>
+      <div id="selectedStudentPanel" class="explain">
+         Uzklikšķini uz skolēna punkta baseinā, lai redzētu viņa prioritāšu sarakstu.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Kopsavilkums</h2>
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="card">
+      <h2>Notikumu žurnāls</h2>
+      <div id="eventLog"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* ============================================================
+   1. Datu shēmas un ģenerators
+   Paredzamās funkcijas:
+   - createSeededRandom(seed)
+   - generateSimulation(options)
+   ============================================================ */
+
+function createSeededRandom(seed = 12345) {
+  let x = seed >>> 0;
+  return function rand() {
+    x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+    return ((x >>> 0) / 4294967296);
+  };
+}
+function weightedSampleWithoutReplacement(items, count, weightFn, rand) {
+  const pool = [...items];
+  const picked = [];
+
+  while (picked.length < count && pool.length) {
+    const totalWeight = pool.reduce((sum, item) => sum + Math.max(0, weightFn(item)), 0);
+    let ticket = rand() * totalWeight;
+
+    let chosenIndex = 0;
+    for (let i = 0; i < pool.length; i++) {
+      ticket -= Math.max(0, weightFn(pool[i]));
+      if (ticket <= 0) {
+        chosenIndex = i;
+        break;
+      }
+    }
+
+    picked.push(pool.splice(chosenIndex, 1)[0]);
+  }
+
+  return picked;
+}
+
+function priorityNoise(programma, rand) {
+  const base = programma.popularitatesSvars ?? 1;
+  return base + rand() * 3;
+}
+function generateSimulation(options = {}) {
+  const rand = options.rand || createSeededRandom(options.seed || 12345);
+
+  const skolas = [
+    { id: "s1", nosaukums: "Centra Pūķa ģimnāzija" },
+    { id: "s2", nosaukums: "Kanālmalas Pūces ģimnāzija" },
+    { id: "s3", nosaukums: "Torņu Lapsas ģimnāzija" },
+    { id: "s4", nosaukums: "Āgenskalna Ozolu ģimnāzija" },
+    { id: "s5", nosaukums: "Daugavas Akmeņu vidusskola" }
+  ];
+
+  const programmas = skolas.flatMap((skola, i) => [
+{
+  id: `p${i + 1}a`,
+  skolaId: skola.id,
+  nosaukums: `${skola.nosaukums} — matemātikas programma`,
+  vietas: 22 + i * 3,
+  popularitatesSvars: [18, 13, 9, 7, 3][i] ?? 2,
+  uzaicinatoRobeza: null,
+  noteikumi: {}
+},
+{
+  id: `p${i + 1}b`,
+  skolaId: skola.id,
+  nosaukums: `${skola.nosaukums} — vispārējā programma`,
+  vietas: 24 + i * 2,
+  popularitatesSvars: [11, 8, 6, 5, 2][i] ?? 2,
+  uzaicinatoRobeza: null,
+  noteikumi: {}
+}
+  ]);
+const skolenuSkaits = clampInt(options.skolenuSkaits ?? 180, 80, 400);
+const minPieteikumi = clampInt(options.minPieteikumi ?? 3, 1, programmas.length);
+const maxPieteikumi = clampInt(options.maxPieteikumi ?? 6, minPieteikumi, programmas.length);
+
+
+ const skoleni = Array.from({ length: skolenuSkaits }, (_, i) => ({
+    id: `sk${i + 1}`,
+    vards: `Skolēns ${i + 1}`,
+    ce: 45 + Math.round(rand() * 55),
+    iestajparbaudijums: 40 + Math.round(rand() * 60),
+    videjaAtzime: +(6 + rand() * 4).toFixed(2)
+  }));
+
+  const pieteikumi = [];
+  for (const skolens of skoleni) {
+const count = Math.min(
+  programmas.length,
+  minPieteikumi + Math.floor(rand() * (maxPieteikumi - minPieteikumi + 1))
+);
+const selectedPrograms = weightedSampleWithoutReplacement(
+  programmas,
+  count,
+  programma => programma.popularitatesSvars ?? 1,
+  rand
+).sort((a, b) => {
+  return priorityNoise(b, rand) - priorityNoise(a, rand) || a.id.localeCompare(b.id);
+});
+
+
+selectedPrograms.forEach((programma, idx) => {
+      pieteikumi.push({
+        id: `a${pieteikumi.length + 1}`,
+        skolensId: skolens.id,
+        programmaId: programma.id,
+        prioritate: idx + 1,
+        statuss: "gaida",
+        kopvertejums: null,
+        rangs: null,
+        virsRobezas: false,
+        derigs: true
+      });
+    });
+  }
+
+  return {
+    meta: {
+      solis: "sakums",
+      cikls72h: 0,
+      seed: options.seed || 12345,
+      paskaidrojums: "Ģenerēti fiktīvi skolēni, skolas, programmas un pieteikumi."
+    },
+    skolas,
+    programmas,
+    skoleni,
+    pieteikumi,
+    notikumi: []
+  };
+}
+
+/* ============================================================
+   2. Punktu plūsma — Katram pieteikumam aprēķina kopvērtējumu
+      pēc kritērijiem (CE, iestājpārbaudījums, vidējā atzīme)
+      un prioritātes penāļa. Arī fitrē derīgos pēc minimālās atzīmes.
+   Funkcija:
+   - scoreApplications(simulacija)
+   ============================================================ */
+
+function scoreApplications(simulacija) {
+  const skoleniById = new Map(simulacija.skoleni.map(s => [s.id, s]));
+
+  for (const p of simulacija.pieteikumi) {
+    const s = skoleniById.get(p.skolensId);
+    const priorityPenalty = p.prioritate * 0.01;
+    p.kopvertejums =
+      +(s.ce * 0.35 + s.iestajparbaudijums * 0.45 + s.videjaAtzime * 10 * 0.20 - priorityPenalty).toFixed(3);
+    p.derigs = s.videjaAtzime >= 6.0;
+  }
+
+  simulacija.meta.solis = "punkti";
+  simulacija.meta.paskaidrojums = "Katram pieteikumam aprēķināts kopvērtējums konkrētajā programmā.";
+  simulacija.notikumi.push("Aprēķināti programmu kopvērtējumi.");
+  return simulacija;
+}
+
+/* ============================================================
+   3. Ranžēšanas plūsma — Pieteikumus sakārto pēc kopvērtējuma
+      katrā programmā un nosaka uzaicināšanas robežu.
+      Pieteikumi tiek marķēti ar rangu un stāvokli (virs/zem robežas).
+   Funkcija:
+   - rankApplicationsAndSetCutoffs(simulacija)
+   ============================================================ */
+
+function rankApplicationsAndSetCutoffs(simulacija) {
+  for (const programma of simulacija.programmas) {
+    const acceptedCount = simulacija.pieteikumi
+      .filter(p => p.programmaId === programma.id && p.statuss === "apstiprinats")
+      .length;
+    const remainingPlaces = Math.max(0, programma.vietas - acceptedCount);
+
+    const activeProgramApps = simulacija.pieteikumi
+      .filter(p => p.programmaId === programma.id && p.derigs && isActiveApplication(p));
+
+    // Reset old ranking flags before recalculating; otherwise previous rounds leak into the next cascade.
+    for (const p of activeProgramApps) {
+      p.rangs = null;
+      p.virsRobezas = false;
+      if (p.statuss === "virs_robezas_bet_neuzaicinats") p.statuss = "gaida";
+    }
+
+    const pieteikumi = activeProgramApps
+      .sort((a, b) => b.kopvertejums - a.kopvertejums || a.prioritate - b.prioritate || a.id.localeCompare(b.id));
+
+    pieteikumi.forEach((p, idx) => {
+      p.rangs = idx + 1;
+      p.virsRobezas = idx < remainingPlaces;
+      if (p.statuss === "gaida" && p.virsRobezas) {
+        p.statuss = "virs_robezas_bet_neuzaicinats";
+      }
+    });
+
+    programma.aiznemtasVietas = acceptedCount;
+    programma.brivasVietas = remainingPlaces;
+    programma.uzaicinatoRobeza = remainingPlaces > 0
+      ? (pieteikumi[remainingPlaces - 1]?.kopvertejums ?? null)
+      : null;
+  }
+
+  simulacija.meta.solis = "sarindots";
+  simulacija.meta.paskaidrojums = "Pieteikumi sakārtoti pēc ranga; jau apstiprinātās vietas skaitās aizņemtas, un redzama nākamā uzaicinājumu robeža.";
+  simulacija.notikumi.push("Pieteikumi sarindoti, robežas noteiktas.");
+  return simulacija;
+}
+
+/* ============================================================
+   4.  Uzaicinājuma plūsma — Katram skolēnam par prioritāti izsūta
+       uzaicinājumu tikai uz vienu programmu (ar augstāko prioritāti),
+       kur viņš ir virs robežas. Zemākas prioritātes pieteikumi tiek
+       marķēti kā "virs robežas, bet neuzaicināti".
+   Funkcija:
+   - issueInvitations(simulacija)
+   ============================================================ */
+
+function issueInvitations(simulacija) {
+  const byStudent = groupBy(simulacija.pieteikumi.filter(isActiveApplication), p => p.skolensId);
+
+  for (const p of simulacija.pieteikumi) {
+    if (p.statuss === "uzaicinats" || p.statuss === "virs_robezas_bet_neuzaicinats") {
+      p.statuss = p.virsRobezas ? "virs_robezas_bet_neuzaicinats" : "gaida";
+    }
+  }
+
+  let count = 0;
+
+  for (const [, applications] of byStudent) {
+    const eligible = applications
+      .filter(p => p.virsRobezas)
+      .sort((a, b) => a.prioritate - b.prioritate);
+
+    if (eligible[0]) {
+      eligible[0].statuss = "uzaicinats";
+      count++;
+
+      for (const other of eligible.slice(1)) {
+        other.statuss = "virs_robezas_bet_neuzaicinats";
+      }
+    }
+  }
+
+  simulacija.meta.solis = "uzaicinajumi";
+  simulacija.meta.paskaidrojums =
+    "Katram skolēnam aktīvs ir tikai viens uzaicinājums — augstākās prioritātes programma, kur viņš ir virs robežas.";
+  simulacija.notikumi.push(`Izsūtīti aktīvie uzaicinājumi: ${count}.`);
+  return simulacija;
+}
+
+/* ============================================================
+   5. 72h lēmumu plūsma — Skolēni 72 stundas lēmj par
+      uzaicināto vietu: apstiprina, noraidīt vai atsauc dalību.
+      Atbrīvotās vietas var izraisīt nākamo uzaicinājumu kaskādi.
+   Funkcija:
+   - process72hDecisions(simulacija, options)
+   ============================================================ */
+
+function process72hDecisions(simulacija, options = {}) {
+  const rand = options.rand || createSeededRandom(1000 + simulacija.meta.cikls72h);
+  const invited = simulacija.pieteikumi.filter(p => p.statuss === "uzaicinats");
+
+  let accepted = 0;
+  let rejected = 0;
+  let withdrawn = 0;
+
+  for (const p of invited) {
+    const activeApps = simulacija.pieteikumi
+      .filter(other => other.skolensId === p.skolensId && isActiveApplication(other));
+
+    const hasHigherActive = activeApps.some(other => other.prioritate < p.prioritate);
+    const hasLowerActive = activeApps.some(other => other.prioritate > p.prioritate);
+    const isLastActiveApplication = activeApps.length === 1;
+
+    let acceptChance;
+    let rejectChance;
+    let withdrawChance;
+
+    if (isLastActiveApplication) {
+      // Pēdējais atlikušais piedāvājums: vairums to pieņem.
+      acceptChance = 0.92;
+      rejectChance = 0.05;
+      withdrawChance = 0.03;
+    } else if (hasHigherActive) {
+      // Droša zemāka izvēle, kamēr augstākas prioritātes vēl dzīvas.
+      acceptChance = 0.62;
+      rejectChance = 0.30;
+      withdrawChance = 0.08;
+    } else if (hasLowerActive) {
+      // Augstāka prioritāte nekā pārējie aktīvie: parasti pieņem.
+      acceptChance = 0.78;
+      rejectChance = 0.16;
+      withdrawChance = 0.06;
+    } else {
+      acceptChance = 0.70;
+      rejectChance = 0.22;
+      withdrawChance = 0.08;
+    }
+
+    const roll = rand();
+
+    if (roll < acceptChance) {
+      p.statuss = "apstiprinats";
+      accepted++;
+      cancelLowerPriorityApplications(simulacija, p);
+    } else if (roll < acceptChance + rejectChance) {
+      p.statuss = "noraidits";
+      rejected++;
+      p.virsRobezas = false;
+    } else {
+      withdrawAllStudentApplications(simulacija, p.skolensId);
+      withdrawn++;
+    }
+  }
+
+  simulacija.meta.cikls72h++;
+  simulacija.meta.solis = "pec_72h";
+  simulacija.meta.paskaidrojums =
+    "Daļa skolēnu apstiprināja, daļa atsauca pēc uzaicināšanas, daļa atsauca dalību, un atbrīvotās vietas var radīt nākamo uzaicinājumu vilni.";
+  simulacija.notikumi.push(
+    `72h cikls #${simulacija.meta.cikls72h}: apstiprināti ${accepted}, atsaukti pēc uzaicināšanas ${rejected}, atsaukti pirms uzaicināšanas ${withdrawn}.`
+  );
+
+  return simulacija;
+}
+
+/* ============================================================
+   6. Simulācijas orķestrācija, ja tāda ir
+   Šajā skeletā orķestrācija ir AppController objektā zemāk.
+   ============================================================ */
+// cascadeEngine.js
+// Teorētisks demo ar fiktīviem datiem. Nav oficiāls uzņemšanas aprēķins.
+
+/**
+ * Sagaidāmās ārējās funkcijas:
+ * - scoreApplications(data)
+ * - rankPrograms(data)
+ * - issueInvitations(data)
+ * - resolve72hDecisions(data)
+ *
+ * Katru padod kā dependency, lai modulis ir testējams un salīmējams.
+ */
+
+function createCascadeEngine({
+  scoreApplications,
+  rankPrograms,
+  issueInvitations,
+  resolve72hDecisions,
+  maxCycles = 12
+}) {
+  function runInitialRound(data) {
+    const before = snapshotState(data);
+
+    let next = cloneData(data);
+    next = scoreApplications(next).data ?? scoreApplications(next);
+    next = rankPrograms(next).data ?? rankPrograms(next);
+    next = issueInvitations(next).data ?? issueInvitations(next);
+
+    ensureSimulacijaMeta(next);
+    next.simulacija.faze = "sakuma_uzaicinajumi";
+    next.simulacija.cikls72h = 0;
+
+    const changes = diffState(before, snapshotState(next));
+
+    return {
+      data: next,
+      changes,
+      phaseLabel: "Sākuma kārta: punkti, rangs un pirmie uzaicinājumi"
+    };
+  }
+
+  function runNext72hCycle(data) {
+    const before = snapshotState(data);
+
+    let next = cloneData(data);
+    ensureSimulacijaMeta(next);
+
+    const currentCycle = next.simulacija.cikls72h ?? 0;
+
+    const decisionResult = resolve72hDecisions(next);
+    next = decisionResult.data ?? decisionResult;
+
+    const afterDecisions = snapshotState(next);
+
+    const rankResult = rankPrograms(next);
+    next = rankResult.data ?? rankResult;
+
+    const inviteResult = issueInvitations(next);
+    next = inviteResult.data ?? inviteResult;
+
+    next.simulacija.cikls72h = currentCycle + 1;
+    next.simulacija.faze = "pec_72h_cikla";
+
+    const after = snapshotState(next);
+
+    const changes = {
+      ...diffState(before, after),
+      decisionChanges: diffState(before, afterDecisions),
+      cascadeCycle: next.simulacija.cikls72h,
+      stable: isStable(next, before, after)
+    };
+
+    return {
+      data: next,
+      changes,
+      phaseLabel: `72h cikls #${next.simulacija.cikls72h}: lēmumi, pārrēķins un nākamie uzaicinājumi`
+    };
+  }
+
+  function isStable(data, beforeSnapshot = null, afterSnapshot = null) {
+    ensureSimulacijaMeta(data);
+
+    if ((data.simulacija.cikls72h ?? 0) >= maxCycles) {
+      return true;
+    }
+
+    if (!beforeSnapshot || !afterSnapshot) {
+      return !hasActiveInvitations(data);
+    }
+
+    const diff = diffState(beforeSnapshot, afterSnapshot);
+
+    return (
+      diff.newInvitations.length === 0 &&
+      diff.statusChanges.length === 0 &&
+      diff.rankChanges.length === 0 &&
+      diff.boundaryChanges.length === 0
+    );
+  }
+
+  return {
+    runInitialRound,
+    runNext72hCycle,
+    isStable
+  };
+}
+
+/* ----------------------------- helpers ----------------------------- */
+
+function ensureSimulacijaMeta(data) {
+  if (!data.simulacija) {
+    data.simulacija = {};
+  }
+
+  if (typeof data.simulacija.cikls72h !== "number") {
+    data.simulacija.cikls72h = 0;
+  }
+
+  if (!data.simulacija.faze) {
+    data.simulacija.faze = "sagatave";
+  }
+}
+function clampInt(value, min, max) {
+  const number = Number.parseInt(value, 10);
+  if (!Number.isFinite(number)) return min;
+  return Math.max(min, Math.min(max, number));
+}
+function cloneData(data) {
+  return structuredClone
+    ? structuredClone(data)
+    : JSON.parse(JSON.stringify(data));
+}
+
+function snapshotState(data) {
+  return {
+    pieteikumi: (data.pieteikumi ?? []).map(p => ({
+      id: p.id,
+      skolensId: p.skolensId,
+      programmaId: p.programmaId,
+      prioritate: p.prioritate,
+      statuss: p.statuss,
+      virsRobezas: !!p.virsRobezas,
+      rangs: p.rangs ?? null,
+      kopvertejums: p.kopvertejums ?? null
+    })),
+    programmas: (data.programmas ?? []).map(pr => ({
+      id: pr.id,
+      uzaicinatoRobeza: pr.uzaicinatoRobeza ?? null,
+      vietuSkaits: pr.vietuSkaits ?? null
+    })),
+    cikls72h: data.simulacija?.cikls72h ?? 0
+  };
+}
+
+function diffState(before, after) {
+  const beforeApps = new Map(before.pieteikumi.map(p => [p.id, p]));
+  const beforePrograms = new Map(before.programmas.map(p => [p.id, p]));
+
+  const statusChanges = [];
+  const newInvitations = [];
+  const cancelledApplications = [];
+  const rankChanges = [];
+
+  for (const app of after.pieteikumi) {
+    const old = beforeApps.get(app.id);
+    if (!old) continue;
+
+    if (old.statuss !== app.statuss) {
+      statusChanges.push({
+        pieteikumsId: app.id,
+        skolensId: app.skolensId,
+        programmaId: app.programmaId,
+        from: old.statuss,
+        to: app.statuss
+      });
+
+      if (app.statuss === "uzaicinats") {
+        newInvitations.push({
+          pieteikumsId: app.id,
+          skolensId: app.skolensId,
+          programmaId: app.programmaId,
+          prioritate: app.prioritate
+        });
+      }
+
+      if (app.statuss === "atcelts_zemakas_prioritates_del") {
+        cancelledApplications.push({
+          pieteikumsId: app.id,
+          skolensId: app.skolensId,
+          programmaId: app.programmaId
+        });
+      }
+    }
+
+    if (old.rangs !== app.rangs || old.virsRobezas !== app.virsRobezas) {
+      rankChanges.push({
+        pieteikumsId: app.id,
+        programmaId: app.programmaId,
+        oldRangs: old.rangs,
+        newRangs: app.rangs,
+        oldVirsRobezas: old.virsRobezas,
+        newVirsRobezas: app.virsRobezas
+      });
+    }
+  }
+
+  const boundaryChanges = [];
+
+  for (const program of after.programmas) {
+    const old = beforePrograms.get(program.id);
+    if (!old) continue;
+
+    if (old.uzaicinatoRobeza !== program.uzaicinatoRobeza) {
+      boundaryChanges.push({
+        programmaId: program.id,
+        from: old.uzaicinatoRobeza,
+        to: program.uzaicinatoRobeza
+      });
+    }
+  }
+
+  return {
+    statusChanges,
+    newInvitations,
+    cancelledApplications,
+    rankChanges,
+    boundaryChanges,
+    hasChanges:
+      statusChanges.length > 0 ||
+      newInvitations.length > 0 ||
+      rankChanges.length > 0 ||
+      boundaryChanges.length > 0
+  };
+}
+
+function hasActiveInvitations(data) {
+  return (data.pieteikumi ?? []).some(p => p.statuss === "uzaicinats");
+}
+/* ============================================================
+   7. Vizualizācijas slānis
+   Paredzamās funkcijas:
+   - createVisualization(canvas, options)
+   - viz.setData(simulacija)
+   - viz.setVisiblePrograms(programmaIds)
+   - viz.setSpeed(speed)
+   - viz.render()
+   ============================================================ */
+function statusLabel(statuss) {
+  return {
+    gaida: "gaida",
+    virs_robezas_bet_neuzaicinats: "virs robežas, bet neuzaicināts",
+    uzaicinats: "uzaicināts",
+    apstiprinats: "apstiprināts",
+    noraidits: "atsaukts pēc uzaicināšanas",
+    atsaukts: "atsaukts pirms uzaicināšanas",
+atcelts_zemakas_prioritates_del: "atcelts, jo zemāka prioritāte par apstiprinātu",
+  }[statuss] || statuss;
+}
+function colorForStatus(statuss) {
+  return {
+    gaida: "#8b95a7",
+    virs_robezas_bet_neuzaicinats: "#f59e0b",
+    uzaicinats: "#06b6d4",
+    apstiprinats: "#4ade80",
+    noraidits: "#f97316",
+    atsaukts: "#d946ef",
+    atcelts_zemakas_prioritates_del: "#475569"
+  }[statuss] || "#8b95a7";
+}
+function getStudentDisplayStatus(simulacija, skolensId) {
+  const applications = simulacija.pieteikumi
+    .filter(p => p.skolensId === skolensId)
+    .sort((a, b) => a.prioritate - b.prioritate || a.programmaId.localeCompare(b.programmaId));
+
+  const highestActive = applications.find(isActiveApplication);
+  if (highestActive) return highestActive.statuss;
+
+  const accepted = applications.find(p => p.statuss === "apstiprinats");
+  if (accepted) return accepted.statuss;
+
+  return applications[0]?.statuss ?? "gaida";
+}
+
+function createVisualization(canvas, options = {}) {
+  const ctx = canvas.getContext("2d");
+  let simulacija = null;
+  let visibleProgramIds = new Set();
+  let speed = 1;
+  let selectedStudents = new Set();
+  let studentHitTargets = [];
+  let applicationHitTargets = [];
+  let applicationPositions = [];
+  let hoveredStudentId = null;
+  let hoveredApplicationId = null;
+  let hoverTooltip = null;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = Math.max(900, Math.floor(rect.width * devicePixelRatio));
+    canvas.height = Math.max(720, Math.floor(rect.height * devicePixelRatio));
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  }
+
+
+function drawHoverTooltip() {
+  if (!hoverTooltip || !simulacija) return;
+
+  const skolens = simulacija.skoleni.find(s => s.id === hoverTooltip.skolensId);
+  const text = skolens?.vards ?? hoverTooltip.skolensId;
+  const paddingX = 9;
+  const paddingY = 6;
+
+  ctx.save();
+  ctx.font = "12px system-ui";
+  const metrics = ctx.measureText(text);
+  const boxW = metrics.width + paddingX * 2;
+  const boxH = 26;
+
+  let x = hoverTooltip.x + 14;
+  let y = hoverTooltip.y + 14;
+
+  if (x + boxW > canvas.clientWidth - 8) x = hoverTooltip.x - boxW - 14;
+  if (y + boxH > canvas.clientHeight - 8) y = hoverTooltip.y - boxH - 14;
+
+  ctx.fillStyle = "rgba(2,6,23,.94)";
+  ctx.strokeStyle = "rgba(226,232,240,.7)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, x, y, boxW, boxH, 7);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillText(text, x + paddingX, y + 17);
+  ctx.restore();
+}
+  function findStudentHit(x, y) {
+    return findNearestHit(studentHitTargets, x, y);
+  }
+
+  function findApplicationHit(x, y) {
+    return findNearestHit(applicationHitTargets, x, y);
+  }
+
+  function findNearestHit(targets, x, y) {
+    let hit = null;
+    let bestDistance = Infinity;
+
+    for (const target of targets) {
+      const dx = x - target.x;
+      const dy = y - target.y;
+      const d2 = dx * dx + dy * dy;
+
+      if (d2 <= target.r * target.r && d2 < bestDistance) {
+        bestDistance = d2;
+        hit = target;
+      }
+    }
+
+    return hit;
+  }
+
+  function toggleStudentSelection(skolensId) {
+    if (!skolensId) return;
+
+    if (selectedStudents.has(skolensId)) selectedStudents.delete(skolensId);
+    else if (selectedStudents.size < 10) selectedStudents.add(skolensId);
+
+    if (typeof options.onSelectionChange === "function") {
+      options.onSelectionChange([...selectedStudents]);
+    }
+  }
+
+  function sortedApplicationsForProgram(programma) {
+    return simulacija.pieteikumi
+      .filter(p => p.programmaId === programma.id)
+      .sort((a, b) => {
+        const ar = a.rangs ?? Number.MAX_SAFE_INTEGER;
+        const br = b.rangs ?? Number.MAX_SAFE_INTEGER;
+        return ar - br || b.kopvertejums - a.kopvertejums || a.prioritate - b.prioritate || a.id.localeCompare(b.id);
+      });
+  }
+
+  function applicationIsAboveInviteBoundary(app) {
+    return app.virsRobezas === true ||
+      app.statuss === "uzaicinats" ||
+      app.statuss === "virs_robezas_bet_neuzaicinats";
+  }
+
+  function drawBoundaryBetweenApps(positionsByAppId, applications) {
+    const boundaryIndex = applications.findLastIndex(applicationIsAboveInviteBoundary);
+    if (boundaryIndex < 0 || boundaryIndex >= applications.length - 1) return;
+
+    const lastAbove = positionsByAppId.get(applications[boundaryIndex].id);
+    const firstBelow = positionsByAppId.get(applications[boundaryIndex + 1].id);
+    if (!lastAbove || !firstBelow) return;
+
+    ctx.save();
+    ctx.strokeStyle = "#fde68a";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    const sameRow = Math.abs(lastAbove.y - firstBelow.y) < 8;
+    if (sameRow) {
+      const midX = (lastAbove.x + firstBelow.x) / 2;
+      const midY = (lastAbove.y + firstBelow.y) / 2;
+      ctx.moveTo(midX, midY - 7);
+      ctx.lineTo(midX, midY + 7);
+    } else {
+      const midY = (lastAbove.y + firstBelow.y) / 2;
+      const midX = Math.max(lastAbove.x, firstBelow.x) + 9;
+      ctx.moveTo(midX - 7, midY);
+      ctx.lineTo(midX + 7, midY);
+    }
+
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawApplicationCircle(app, ax, ay, radius = 3.2) {
+    const isSelected = selectedStudents.has(app.skolensId);
+    const isHovered = hoveredApplicationId === app.id || hoveredStudentId === app.skolensId;
+
+    if (isSelected || isHovered) {
+      ctx.beginPath();
+      ctx.arc(ax, ay, radius + 3.8, 0, Math.PI * 2);
+      ctx.strokeStyle = isSelected ? "#ffffff" : "rgba(255,255,255,.65)";
+      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(ax, ay, radius, 0, Math.PI * 2);
+    ctx.fillStyle = colorForStatus(app.statuss);
+    ctx.fill();
+
+    applicationHitTargets.push({
+      pieteikumsId: app.id,
+      skolensId: app.skolensId,
+      programmaId: app.programmaId,
+      x: ax,
+      y: ay,
+      r: Math.max(radius + 5, 8)
+    });
+
+    applicationPositions.push({
+      pieteikumsId: app.id,
+      skolensId: app.skolensId,
+      programmaId: app.programmaId,
+      x: ax,
+      y: ay
+    });
+  }
+
+  function render() {
+    studentHitTargets = [];
+    applicationHitTargets = [];
+    applicationPositions = [];
+
+    resize();
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!simulacija) {
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "16px system-ui";
+      ctx.fillText("Nospied \"Sākt\", lai ģenerētu fiktīvu simulāciju.", 40, 50);
+      requestAnimationFrame(render);
+      return;
+    }
+
+    const isSorted = simulacija.meta.solis !== "sakums";
+    const cx = w / 2;
+    const cy = h / 2;
+    const poolR = Math.min(w, h) * 0.22;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, poolR, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(56,189,248,.08)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(125,211,252,.55)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = "#e5e7eb";
+    ctx.font = "14px system-ui";
+    ctx.fillText("skolēnu baseins", cx - 52, cy - poolR - 10);
+
+    for (const [i, s] of simulacija.skoleni.entries()) {
+      const angle = i * 2.399 + performance.now() * 0.00008 * speed;
+      const r = poolR * Math.sqrt((i % 97) / 97);
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+      const radius = selectedStudents.has(s.id) ? 4.5 : 2.8;
+      const displayStatus = getStudentDisplayStatus(simulacija, s.id);
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = colorForStatus(displayStatus);
+      ctx.fill();
+
+      if (selectedStudents.has(s.id) || hoveredStudentId === s.id) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius + 3.5, 0, Math.PI * 2);
+        ctx.strokeStyle = selectedStudents.has(s.id) ? "#ffffff" : "rgba(255,255,255,.65)";
+        ctx.lineWidth = selectedStudents.has(s.id) ? 2 : 1;
+        ctx.stroke();
+      }
+
+      studentHitTargets.push({
+        skolensId: s.id,
+        x,
+        y,
+        r: Math.max(radius + 4, 7)
+      });
+    }
+
+    const visiblePrograms = simulacija.programmas.filter(p => visibleProgramIds.has(p.id));
+    const rects = layoutProgramRects(visiblePrograms, w, h, { isSorted });
+
+    for (const item of rects) {
+      const { programma, x, y, width, height } = item;
+      const applications = sortedApplicationsForProgram(programma);
+      const positionsByAppId = new Map();
+
+      ctx.fillStyle = "rgba(17,24,39,.92)";
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 1;
+      roundRect(ctx, x, y, width, height, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "11px system-ui";
+      wrapText(ctx, programma.nosaukums, x + 8, y + 16, width - 16, 13);
+
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "10px system-ui";
+      const brivas = typeof programma.brivasVietas === "number" ? `, brīvas: ${programma.brivasVietas}` : "";
+      ctx.fillText(`vietas: ${programma.vietas}${brivas}`, x + 8, y + 42);
+
+      applications.slice(0, isSorted ? 90 : 70).forEach((app, idx) => {
+        let ax;
+        let ay;
+
+        if (isSorted && app.rangs) {
+          const usableWidth = width - 24;
+          const startX = x + 12;
+          const rowY = y + 64;
+          const gap = Math.max(7, Math.min(13, usableWidth / Math.max(1, Math.min(applications.length, 70))));
+          const rowCapacity = Math.max(8, Math.floor(usableWidth / gap));
+          ax = startX + (idx % rowCapacity) * gap + gap / 2;
+          ay = rowY + Math.floor(idx / rowCapacity) * 14;
+        } else {
+          ax = x + 12 + pseudoRandom(app.id, 1) * (width - 24);
+          ay = y + 54 + pseudoRandom(app.id, 2) * (height - 64);
+        }
+
+        positionsByAppId.set(app.id, { x: ax, y: ay });
+        drawApplicationCircle(app, ax, ay, isSorted ? 3.4 : 3);
+      });
+
+      if (isSorted) {
+        drawBoundaryBetweenApps(positionsByAppId, applications.slice(0, 90));
+      }
+    }
+
+    if (selectedStudents.size) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,.35)";
+      ctx.lineWidth = 1;
+
+      for (const skolensId of selectedStudents) {
+        const student = studentHitTargets.find(t => t.skolensId === skolensId);
+        if (!student) continue;
+
+        for (const app of applicationPositions.filter(p => p.skolensId === skolensId && visibleProgramIds.has(p.programmaId))) {
+          ctx.beginPath();
+          ctx.moveTo(student.x, student.y);
+          ctx.lineTo(app.x, app.y);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    drawHoverTooltip();
+    requestAnimationFrame(render);
+  }
+
+canvas.addEventListener("mousemove", event => {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const studentHit = findStudentHit(x, y);
+  const applicationHit = findApplicationHit(x, y);
+
+  const skolensId = studentHit?.skolensId ?? applicationHit?.skolensId ?? null;
+
+  hoveredStudentId = skolensId;
+  hoveredApplicationId = applicationHit?.pieteikumsId ?? null;
+  hoverTooltip = skolensId ? { skolensId, x, y } : null;
+
+  canvas.style.cursor = studentHit || applicationHit ? "pointer" : "";
+});
+
+  canvas.addEventListener("mouseleave", () => {
+    hoveredStudentId = null;
+    hoveredApplicationId = null;
+    canvas.style.cursor = "";
+    hoverTooltip = null;
+  });
+
+  canvas.addEventListener("click", event => {
+    if (!simulacija) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const studentHit = findStudentHit(x, y);
+    const applicationHit = findApplicationHit(x, y);
+    const skolensId = studentHit?.skolensId ?? applicationHit?.skolensId;
+
+    if (!skolensId) return;
+    toggleStudentSelection(skolensId);
+  });
+
+  return {
+    setData(data) { simulacija = data; },
+    setVisiblePrograms(ids) { visibleProgramIds = new Set(ids); },
+    setSpeed(value) { speed = Number(value) || 1; },
+    render
+  };
+}
+
+
+/* ============================================================
+   8. UI, vadības panelis 
+   ============================================================ */
+
+const AppController = {
+  simulacija: null,
+  rand: null,
+  viz: null,
+  visibleProgramIds: new Set(),
+  autoRunning: false,
+
+getGeneratorOptions() {
+  const skolenuSkaits = clampInt(this.dom.studentCountInput.value, 80, 400);
+  const minPieteikumi = clampInt(this.dom.minAppsInput.value, 1, 10);
+  const maxPieteikumi = clampInt(this.dom.maxAppsInput.value, minPieteikumi, 10);
+
+  this.dom.studentCountInput.value = skolenuSkaits;
+  this.dom.minAppsInput.value = minPieteikumi;
+  this.dom.maxAppsInput.value = maxPieteikumi;
+
+  return { skolenuSkaits, minPieteikumi, maxPieteikumi };
+},
+
+init() {
+  this.cacheDom();
+  this.bindEvents();
+
+  this.selectedStudentIds = [];
+
+  this.viz = createVisualization(this.dom.canvas, {
+    onSelectionChange: ids => {
+      this.selectedStudentIds = ids;
+      this.updateSelectedStudentPanel();
+    }
+  });
+
+  this.viz.render();
+
+  this.renderLegend();
+  this.updateExplanation("Nospied “Sākt”, lai ģenerētu fiktīvu demo simulāciju.");
+  this.updateStats();
+  this.updateSelectedStudentPanel();
+  this.updateButtonStates();
+},
+
+cacheDom() {
+  this.dom = {
+    canvas: document.getElementById("vizCanvas"),
+    programSelector: document.getElementById("programSelector"),
+    explanation: document.getElementById("explanation"),
+    selectedStudentPanel: document.getElementById("selectedStudentPanel"),
+    eventLog: document.getElementById("eventLog"),
+    stats: document.getElementById("stats"),
+    speedRange: document.getElementById("speedRange"),
+    speedLabel: document.getElementById("speedLabel"),
+    btnStart: document.getElementById("btnStart"),
+    btnRank: document.getElementById("btnRank"),
+    btnInvite: document.getElementById("btnInvite"),
+    btn72h: document.getElementById("btn72h"),
+    btnAuto: document.getElementById("btnAuto"),
+    btnReset: document.getElementById("btnReset"),
+    legendCard: document.querySelector(".card:nth-of-type(3)"),
+    studentCountInput: document.getElementById("studentCountInput"),
+    minAppsInput: document.getElementById("minAppsInput"),
+    maxAppsInput: document.getElementById("maxAppsInput")
+  };
+},
+
+  bindEvents() {
+    this.dom.btnStart.addEventListener("click", () => this.start());
+    this.dom.btnRank.addEventListener("click", () => this.rank());
+    this.dom.btnInvite.addEventListener("click", () => this.invite());
+    this.dom.btn72h.addEventListener("click", () => this.next72h());
+    this.dom.btnAuto.addEventListener("click", () => this.autoUntilStable());
+    this.dom.btnReset.addEventListener("click", () => this.reset());
+
+this.dom.speedRange.addEventListener("input", event => {
+  const speed = Number(event.target.value);
+  this.dom.speedLabel.textContent = `${speed}×`;
+  this.viz?.setSpeed(speed);
+});
+
+for (const input of [this.dom.studentCountInput, this.dom.minAppsInput, this.dom.maxAppsInput]) {
+
+  const clampValue = () => {
+    const min = Number(input.min);
+    const max = Number(input.max);
+
+    let value = Number(input.value);
+
+    if (!Number.isFinite(value)) value = min;
+    value = Math.max(min, Math.min(max, value));
+
+    input.value = value;
+  };
+
+  const onParamEdit = () => {
+    clampValue();
+
+    if (this.simulacija) {
+      this.updateExplanation(
+        "Parametri mainīti. Nospied “Sākt”, lai ģenerētu jaunu simulāciju; aktīvā simulācija netiek mainīta."
+      );
+    }
+  };
+
+  input.addEventListener("input", onParamEdit);
+  input.addEventListener("change", onParamEdit);
+}
+  },
+start() {
+  this.rand = createSeededRandom(12345);
+  this.simulacija = generateSimulation({
+    seed: 12345,
+    rand: this.rand,
+    ...this.getGeneratorOptions()
+  });
+
+  this.visibleProgramIds = new Set(this.simulacija.programmas.slice(0, 8).map(p => p.id));
+  this.renderProgramSelector();
+  this.refresh("Ģenerēti fiktīvi dati ar izvēlētajiem parametriem. Tālāk var spiest “Sarindot”.");
+},
+
+rank() {
+  if (this.dom.btnRank.disabled) return;
+  if (!this.ensureSimulation()) return;
+  scoreApplications(this.simulacija);
+  rankApplicationsAndSetCutoffs(this.simulacija);
+  this.refresh(this.simulacija.meta.paskaidrojums);
+},
+
+invite() {
+  if (this.dom.btnInvite.disabled) return;
+  if (!this.ensureSimulation()) return;
+  scoreApplications(this.simulacija);
+  rankApplicationsAndSetCutoffs(this.simulacija);
+  issueInvitations(this.simulacija);
+  this.refresh(this.simulacija.meta.paskaidrojums);
+},
+
+  next72h() {
+    if (!this.ensureSimulation()) return;
+    process72hDecisions(this.simulacija, { rand: this.rand });
+    scoreApplications(this.simulacija);
+    rankApplicationsAndSetCutoffs(this.simulacija);
+    issueInvitations(this.simulacija);
+    this.refresh(this.simulacija.meta.paskaidrojums);
+  },
+
+  autoUntilStable() {
+    if (!this.ensureSimulation()) return;
+    if (this.autoRunning) return;
+
+    this.autoRunning = true;
+    let rounds = 0;
+
+    const step = () => {
+      if (!this.autoRunning || rounds >= 20 || this.countByStatus("uzaicinats") === 0 && rounds > 0) {
+        this.autoRunning = false;
+        this.refresh("Automātiskā simulācija apstājās: sasniegts stabils stāvoklis vai drošības limits.");
+        return;
+      }
+
+      this.next72h();
+      rounds++;
+      setTimeout(step, 450 / Number(this.dom.speedRange.value));
+    };
+
+    if (this.countByStatus("uzaicinats") === 0) {
+      this.invite();
+    }
+
+    step();
+  },
+
+reset() {
+  this.autoRunning = false;
+  this.simulacija = null;
+  this.visibleProgramIds = new Set();
+  this.selectedStudentIds = [];
+
+  this.dom.programSelector.innerHTML = "";
+  this.dom.eventLog.textContent = "";
+  this.viz.setData(null);
+
+  this.updateExplanation("Simulācija atiestatīta. Nospied “Sākt”.");
+  this.updateStats();
+  this.updateSelectedStudentPanel();
+
+  this.updateButtonStates();
+},
+  updateButtonStates() {
+  const solis = this.simulacija?.meta?.solis ?? null;
+
+  const hasSimulation = !!this.simulacija;
+  const canRank = hasSimulation && solis === "sakums";
+  const canInvite = hasSimulation && (solis === "sakums" || solis === "sarindots");
+
+  this.dom.btnRank.disabled = !canRank;
+  this.dom.btnInvite.disabled = !canInvite;
+},
+
+  renderProgramSelector() {
+    this.dom.programSelector.innerHTML = "";
+
+    for (const programma of this.simulacija.programmas) {
+      const row = document.createElement("label");
+      row.className = "check-row";
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = this.visibleProgramIds.has(programma.id);
+      input.addEventListener("change", () => {
+        if (input.checked) this.visibleProgramIds.add(programma.id);
+        else this.visibleProgramIds.delete(programma.id);
+        this.refresh();
+      });
+
+      const span = document.createElement("span");
+      span.textContent = programma.nosaukums;
+
+      row.append(input, span);
+      this.dom.programSelector.append(row);
+    }
+  },
+
+refresh(message) {
+  if (message) this.updateExplanation(message);
+
+  this.viz.setData(this.simulacija);
+  this.viz.setVisiblePrograms([...this.visibleProgramIds]);
+
+  this.updateStats();
+  this.updateLog();
+  this.updateSelectedStudentPanel();
+  this.updateButtonStates();
+},
+
+  updateExplanation(text) {
+    this.dom.explanation.textContent = text;
+  },
+
+  updateLog() {
+    if (!this.simulacija) {
+      this.dom.eventLog.textContent = "";
+      return;
+    }
+
+    this.dom.eventLog.textContent = this.simulacija.notikumi
+      .slice()
+      .reverse()
+      .map((line, idx) => `${this.simulacija.notikumi.length - idx}. ${line}`)
+      .join("\n");
+  },
+
+updateStats() {
+  if (!this.simulacija) {
+    this.dom.stats.innerHTML = `
+      <div class="stat"><b>0</b> skolēni</div>
+      <div class="stat"><b>0</b> pieteikumi</div>
+      <div class="stat"><b>0</b> vietu skaits kopā</div>
+      <div class="stat"><b>0</b> uzaicinātie</div>
+    `;
+    return;
+  }
+
+  const vietuSkaitsKopa = this.simulacija.programmas
+    .reduce((sum, p) => sum + p.vietas, 0);
+
+  this.dom.stats.innerHTML = `
+    <div class="stat"><b>${this.simulacija.skoleni.length}</b> skolēni</div>
+    <div class="stat"><b>${this.simulacija.pieteikumi.length}</b> pieteikumi</div>
+    <div class="stat"><b>${vietuSkaitsKopa}</b> vietu skaits kopā</div>
+    <div class="stat"><b>${this.countByStatus("uzaicinats")}</b> uzaicinātie</div>
+    <div class="stat"><b>${this.countByStatus("apstiprinats")}</b> apstiprināts</div>
+    <div class="stat"><b>${this.simulacija.meta.cikls72h}</b> 72h cikli</div>
+  `;
+},
+renderLegend() {
+  const legendRows = [
+    ["gaida", "var(--gaida)"],
+    ["virs_robezas_bet_neuzaicinats", "var(--virs)"],
+    ["uzaicinats", "var(--uzaicinats)"],
+    ["apstiprinats", "var(--apstiprinats)"],
+    ["noraidits", "var(--noraidits)"],
+    ["atsaukts", "var(--atsaukts)"],
+    ["atcelts_zemakas_prioritates_del", "var(--atcelts)"]
+  ];
+
+  const rowsHtml = legendRows
+    .map(([statuss, color]) =>
+      `<div class="legend-row"><span class="dot" style="background:${color}"></span> ${statusLabel(statuss)}</div>`
+    )
+    .join("");
+
+  const title = this.dom.legendCard.querySelector("h2");
+  this.dom.legendCard.innerHTML = "";
+  this.dom.legendCard.append(title);
+  this.dom.legendCard.insertAdjacentHTML("beforeend", rowsHtml);
+},
+
+updateSelectedStudentPanel() {
+  if (!this.dom.selectedStudentPanel) return;
+
+  if (!this.simulacija || !this.selectedStudentIds?.length) {
+    this.dom.selectedStudentPanel.innerHTML =
+      "Uzklikšķini uz skolēna punkta baseinā, lai redzētu viņa prioritāšu sarakstu.";
+    return;
+  }
+
+  const skoleniById = new Map(this.simulacija.skoleni.map(s => [s.id, s]));
+  const programmasById = new Map(this.simulacija.programmas.map(p => [p.id, p]));
+
+  this.dom.selectedStudentPanel.innerHTML = this.selectedStudentIds
+    .map(skolensId => {
+      const skolens = skoleniById.get(skolensId);
+      const displayStatus = getStudentDisplayStatus(this.simulacija, skolensId);
+      const studentColor = colorForStatus(displayStatus);
+
+      const apps = this.simulacija.pieteikumi
+        .filter(p => p.skolensId === skolensId)
+        .sort((a, b) => a.prioritate - b.prioritate || a.programmaId.localeCompare(b.programmaId));
+
+      const activeInvite = apps.find(p => p.statuss === "uzaicinats");
+      const highestActive = apps.find(isActiveApplication);
+      const summaryApp = activeInvite || highestActive;
+
+      const summaryStatusColor = summaryApp ? colorForStatus(summaryApp.statuss) : "#cbd5e1";
+
+      const summary = summaryApp
+        ? `<p><b>${activeInvite ? "Aktīvais uzaicinājums" : "Augstākais aktīvais pieteikums"}:</b><br>
+             ${programmasById.get(summaryApp.programmaId)?.nosaukums ?? summaryApp.programmaId}
+             — <span style="color:${summaryStatusColor};font-weight:700">${statusLabel(summaryApp.statuss)}</span></p>`
+        : `<p><b>Aktīvu pieteikumu nav.</b></p>`;
+
+      const rows = apps.map(app => {
+        const programma = programmasById.get(app.programmaId);
+        const hidden = this.visibleProgramIds.has(app.programmaId) ? "" : " — programma paslēpta";
+        const appColor = colorForStatus(app.statuss);
+
+        return `<li style="margin-bottom:6px">
+          <span style="display:inline-block;width:9px;height:9px;border-radius:999px;background:${appColor};margin-right:6px"></span>
+          #${app.prioritate} ${programma?.nosaukums ?? app.programmaId}<br>
+<small style="color:${appColor};font-weight:700">${statusLabel(app.statuss)}</small>
+<small style="color:#9ca3af">
+  ${app.kopvertejums == null ? "" : ` · punkti: ${app.kopvertejums}`}
+  ${app.rangs == null ? "" : ` · rangs: ${app.rangs}`}
+  ${hidden}
+</small>
+        </li>`;
+      }).join("");
+
+      return `
+        <div style="margin-bottom:12px">
+          <b style="color:${studentColor}">${skolens?.vards ?? skolensId}</b>
+          <span style="color:#9ca3af"> — ${statusLabel(displayStatus)}</span>
+          ${summary}
+          <ol style="padding-left:20px;margin-top:6px">${rows}</ol>
+        </div>
+      `;
+    })
+    .join("<hr>");
+},
+  countByStatus(statuss) {
+    if (!this.simulacija) return 0;
+    return this.simulacija.pieteikumi.filter(p => p.statuss === statuss).length;
+  },
+
+  ensureSimulation() {
+    if (!this.simulacija) {
+      this.start();
+      return true;
+    }
+    return true;
+  }
+};
+
+/* ============================================================
+   Palīgfunkcijas
+   ============================================================ */
+
+function isActiveApplication(p) {
+  return ![
+    "apstiprinats",
+    "noraidits",
+    "atsaukts",
+    "atcelts_zemakas_prioritates_del"
+  ].includes(p.statuss);
+}
+
+function cancelLowerPriorityApplications(simulacija, acceptedApplication) {
+  for (const p of simulacija.pieteikumi) {
+    if (
+      p.skolensId === acceptedApplication.skolensId &&
+      p.id !== acceptedApplication.id &&
+      p.prioritate > acceptedApplication.prioritate &&
+      p.statuss !== "noraidits" &&
+      p.statuss !== "atsaukts"
+    ) {
+      // Ja vēlāk apstiprina augstāku prioritāti, arī agrāks zemākas prioritātes apstiprinājums tiek nogriezts.
+      p.statuss = "atcelts_zemakas_prioritates_del";
+      p.virsRobezas = false;
+    }
+  }
+}
+
+function withdrawAllStudentApplications(simulacija, skolensId) {
+  for (const p of simulacija.pieteikumi) {
+    if (
+      p.skolensId === skolensId &&
+      p.statuss !== "apstiprinats" &&
+      p.statuss !== "noraidits" &&
+      p.statuss !== "atcelts_zemakas_prioritates_del"
+    ) {
+      p.statuss = "atsaukts";
+      p.virsRobezas = false;
+    }
+  }
+}
+
+function groupBy(items, keyFn) {
+  const map = new Map();
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(item);
+  }
+  return map;
+}
+
+function pseudoRandom(text, salt = 0) {
+  let h = 2166136261 + salt;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 10000) / 10000;
+}
+
+function layoutProgramRects(programmas, w, h, options = {}) {
+  const margin = 24;
+  const isSorted = !!options.isSorted;
+  const rectW = isSorted ? 300 : 170;
+  const rectH = isSorted ? 128 : 190;
+  const gap = 12;
+  const top = margin;
+  const bottom = h - rectH - margin;
+  const left = margin;
+  const right = w - rectW - margin;
+
+  return programmas.map((programma, i) => {
+    const side = i % 4;
+    const k = Math.floor(i / 4);
+
+    if (side === 0) return { programma, x: left + k * (rectW + gap), y: top, width: rectW, height: rectH };
+    if (side === 1) return { programma, x: right, y: top + k * (rectH + gap), width: rectW, height: rectH };
+    if (side === 2) return { programma, x: right - k * (rectW + gap), y: bottom, width: rectW, height: rectH };
+    return { programma, x: left, y: bottom - k * (rectH + gap), width: rectW, height: rectH };
+  });
+}
+
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + width, y, x + width, y + height, radius);
+  ctx.arcTo(x + width, y + height, x, y + height, radius);
+  ctx.arcTo(x, y + height, x, y, radius);
+  ctx.arcTo(x, y, x + width, y, radius);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(" ");
+  let line = "";
+
+  for (const word of words) {
+    const test = line + word + " ";
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line, x, y);
+      line = word + " ";
+      y += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+
+  ctx.fillText(line, x, y);
+}
+
+document.addEventListener("DOMContentLoaded", () => AppController.init());
+</script>
+</body>
+</html>
