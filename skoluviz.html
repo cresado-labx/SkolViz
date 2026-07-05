@@ -411,7 +411,6 @@
           height: 180px;
         }
       }
-
     </style>
   </head>
 
@@ -423,7 +422,9 @@
         skolu uzņemšanas aprēķins.
       </div>
     </header>
-    <button id="btnMobileControls" class="mobile-toggle" type="button">Sākt šeit</button>
+    <button id="btnMobileControls" class="mobile-toggle" type="button">
+      Sākt šeit
+    </button>
     <button id="btnMobileInfo" class="mobile-toggle" type="button">Info</button>
 
     <main>
@@ -525,15 +526,16 @@
         <div class="card">
           <h2>Kas pašlaik notiek?</h2>
           <div id="explanation" class="explain">
-            Nospied "Sākt". Tālāk vari vērot uzņemšanu soli pa solim vai automātiski. Pēc tam uzklikšķini uz skolēna, lai redzētu viņa ceļu.
+            Nospied "Sākt". Tālāk vari vērot uzņemšanu soli pa solim vai
+            automātiski. Pēc tam uzklikšķini uz skolēna, lai redzētu viņa ceļu.
           </div>
         </div>
 
         <div class="card">
           <h2>Atlasītais skolēns</h2>
           <div id="selectedStudentPanel" class="explain">
-            Uzklikšķini uz skolēna punkta skolēnu kopā, lai redzētu viņa prioritāšu
-            sarakstu un to izmaiņas.
+            Uzklikšķini uz skolēna punkta skolēnu kopā, lai redzētu viņa
+            prioritāšu sarakstu un to izmaiņas.
           </div>
         </div>
 
@@ -1430,11 +1432,18 @@
           if (!simulacija) {
             ctx.fillStyle = "#94a3b8";
             ctx.font = "16px system-ui";
-            ctx.fillText(
-              'Nospied "Sākt". Tālāk vari vērot uzņemšanu soli pa solim vai automātiski. Uzklikšķini uz skolēna, lai redzētu viņa ceļu.',
-              40,
-              50,
-            );
+            const lines = [
+              'Nospied "Sākt".',
+              "",
+              "Pēc tam vari vērot uzņemšanu soli pa solim vai automātiski.",
+              "",
+              "Uzklikšķini uz skolēna, lai redzētu viņa ceļu.",
+            ];
+            let y = 50;
+            for (const line of lines) {
+              if (line) ctx.fillText(line, 40, y);
+              y += 24;
+            }
             requestAnimationFrame(render);
             return;
           }
@@ -1682,7 +1691,7 @@
 
           this.renderLegend();
           this.updateExplanation(
-            "Nospied \"Sākt\". Tālāk vari vērot uzņemšanu soli pa solim vai automātiski. Uzklikšķini uz skolēna, lai redzētu viņa ceļu.",
+            'Nospied "Sākt". Tālāk vari vērot uzņemšanu soli pa solim vai automātiski. Uzklikšķini uz skolēna, lai redzētu viņa ceļu.',
           );
           this.updateStats();
           this.updateSelectedStudentPanel();
@@ -2208,21 +2217,37 @@
       }
 
       function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-        const words = text.split(" ");
-        let line = "";
+        const paragraphs = text.split("\n");
 
-        for (const word of words) {
-          const test = line + word + " ";
-          if (ctx.measureText(test).width > maxWidth && line) {
-            ctx.fillText(line, x, y);
-            line = word + " ";
+        for (const paragraph of paragraphs) {
+          // tukša rinda
+          if (paragraph.trim() === "") {
             y += lineHeight;
-          } else {
-            line = test;
+            continue;
+          }
+
+          const words = paragraph.split(" ");
+          let line = "";
+
+          for (const word of words) {
+            const test = line + word + " ";
+
+            if (ctx.measureText(test).width > maxWidth && line) {
+              ctx.fillText(line, x, y);
+              line = word + " ";
+              y += lineHeight;
+            } else {
+              line = test;
+            }
+          }
+
+          if (line) {
+            ctx.fillText(line, x, y);
+            y += lineHeight;
           }
         }
 
-        ctx.fillText(line, x, y);
+        return y;
       }
 
       document.addEventListener("DOMContentLoaded", () => AppController.init());
