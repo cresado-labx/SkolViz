@@ -1755,8 +1755,15 @@
             this.dom.maxAppsInput,
           ]) {
             const clampValue = () => {
-              const min = Number(input.min);
               const max = Number(input.max);
+
+              // Special case: maxAppsInput should have dynamic min based on minAppsInput
+              if (input === this.dom.maxAppsInput) {
+                const minAppsValue = Number(this.dom.minAppsInput.value);
+                if (Number.isFinite(minAppsValue)) {
+                  min = minAppsValue;
+                }
+              }
 
               let value = Number(input.value);
 
